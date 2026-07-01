@@ -20,8 +20,14 @@ def get_insights(
         company_name
     )
 
+    headlines = "\n".join(
+    article["title"]
+    for article in news
+)
+
     summary = generate_summary(
-        news
+        company_name,
+        headlines
     )
 
     return {
