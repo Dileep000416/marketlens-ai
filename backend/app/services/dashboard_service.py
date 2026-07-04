@@ -12,6 +12,9 @@ from app.services.intelligence.activity_score_service import (
     calculate_activity_score,
 )
 
+from app.services.recommendation.recommendation_service import (
+    generate_recommendations,
+)
 
 # ---------------------------------------------------------
 # Default Dashboard Response
@@ -87,7 +90,9 @@ EMPTY_DASHBOARD = {
 
         "risks": []
 
-    }
+    },
+
+    "recommended_competitors": []
 
 }
 
@@ -125,6 +130,8 @@ def build_dashboard_response(
     articles,
 
     intelligence,
+
+    recommendations,
 
 ):
 
@@ -222,7 +229,9 @@ def build_dashboard_response(
 
             )
 
-        }
+        },
+
+        "recommended_competitors": recommendations,
 
     }
 
@@ -290,6 +299,38 @@ def get_dashboard_data(
     )
 
     # ---------------------------------------------
+    # Recommendation Engine
+    # ---------------------------------------------
+
+    try:
+
+        recommendations = generate_recommendations(
+
+            company_name=company_name,
+
+            company_profile=intelligence.get(
+
+                "company_profile",
+
+                {},
+
+            ),
+
+            executive_summary=intelligence.get(
+
+                "executive_summary",
+
+                "",
+
+            ),
+
+        )
+
+    except Exception:
+
+        recommendations = []
+
+    # ---------------------------------------------
     # Final Dashboard
     # ---------------------------------------------
 
@@ -300,5 +341,7 @@ def get_dashboard_data(
         articles,
 
         intelligence,
+
+        recommendations,
 
     )

@@ -244,7 +244,7 @@ export default function CompareHero({
           {/* Compare Button */}
 
           <button
-            onClick={compareCompanies}
+            onClick={() => compareCompanies()}
             className="
               rounded-2xl
               bg-gradient-to-r

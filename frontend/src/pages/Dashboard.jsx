@@ -6,6 +6,7 @@ import DashboardHeader from "../components/dashboard/DashboardHeader";
 
 import CompanyOverviewCard from "../components/dashboard/CompanyOverviewCard";
 import ExecutiveSummaryCard from "../components/dashboard/ExecutiveSummaryCard";
+import RecommendedCompetitorsCard from "../components/dashboard/RecommendedCompetitorsCard";
 
 import StatsCards from "../components/dashboard/StatsCards";
 import ActivityGauge from "../components/dashboard/ActivityGauge";
@@ -19,6 +20,8 @@ import AISummaryCard from "../components/dashboard/AISummaryCard";
 import SourcesCard from "../components/dashboard/SourcesCard";
 
 import LoadingSkeleton from "../components/dashboard/LoadingSkeleton";
+
+import { getDashboard } from "../services/api";
 
 export default function Dashboard() {
 
@@ -34,11 +37,7 @@ export default function Dashboard() {
 
       setIsLoading(true);
 
-      const response = await fetch(
-        `http://127.0.0.1:8000/dashboard/${company}`
-      );
-
-      const result = await response.json();
+      const result = await getDashboard(company);
 
       setData(result);
 
@@ -123,15 +122,10 @@ export default function Dashboard() {
           {!isLoading && data && (
 
             <motion.div
-
               initial={{ opacity: 0 }}
-
               animate={{ opacity: 1 }}
-
               exit={{ opacity: 0 }}
-
               className="space-y-10"
-
             >
 
               {/* Dashboard Header */}
@@ -173,6 +167,21 @@ export default function Dashboard() {
 
                 <ExecutiveSummaryCard
                   summary={data.executive_summary}
+                />
+
+              </motion.div>
+
+              {/* AI Recommended Competitors */}
+
+              <motion.div
+                initial={{ opacity: 0, y: 35 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.11 }}
+              >
+
+                <RecommendedCompetitorsCard
+                  company={data.company}
+                  recommendations={data.recommended_competitors}
                 />
 
               </motion.div>

@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSearchParams } from "react-router-dom";
 
 import CompareHero from "../components/compare/CompareHero";
 import CompanyCard from "../components/compare/CompanyCard";
@@ -13,6 +14,9 @@ import CompareEmptyState from "../components/compare/CompareEmptyState";
 import { compareCompanies } from "../services/api";
 
 export default function Compare() {
+
+  const [searchParams] = useSearchParams();
+
   const [company1, setCompany1] = useState("");
   const [company2, setCompany2] = useState("");
 
@@ -20,34 +24,90 @@ export default function Compare() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleCompare = async () => {
-    if (!company1.trim() || !company2.trim()) return;
+  // -------------------------------------------------------
+  // Compare Handler
+  // -------------------------------------------------------
 
-    try {
-      setError("");
-      setComparisonData(null);
-      setIsLoading(true);
+  const handleCompare = useCallback(
+    async (
+      firstCompany = company1,
+      secondCompany = company2
+    ) => {
 
-      const result = await compareCompanies(
-        company1,
-        company2
-      );
+      if (
+        !firstCompany.trim() ||
+        !secondCompany.trim()
+      ) {
+        return;
+      }
 
-      setComparisonData(result);
-    } catch (err) {
-      console.error(err);
+      try {
 
-      setComparisonData(null);
+        setError("");
 
-      setError(
-        "Unable to compare these companies. Please verify the company names and try again."
-      );
-    } finally {
-      setIsLoading(false);
+        setComparisonData(null);
+
+        setIsLoading(true);
+
+        const result = await compareCompanies(
+          firstCompany,
+          secondCompany
+        );
+
+        setComparisonData(result);
+
+      } catch (err) {
+
+        console.error(err);
+
+        setComparisonData(null);
+
+        setError(
+          "Unable to compare these companies. Please verify the company names and try again."
+        );
+
+      } finally {
+
+        setIsLoading(false);
+
+      }
+
+    },
+    [company1, company2]
+  );
+
+  // -------------------------------------------------------
+  // Auto Compare From Dashboard
+  // -------------------------------------------------------
+
+  useEffect(() => {
+
+    const firstCompany =
+      searchParams.get("company1");
+
+    const secondCompany =
+      searchParams.get("company2");
+
+    if (
+      !firstCompany ||
+      !secondCompany
+    ) {
+      return;
     }
-  };
+
+    setCompany1(firstCompany);
+
+    setCompany2(secondCompany);
+
+    handleCompare(
+      firstCompany,
+      secondCompany
+    );
+
+  }, [searchParams, handleCompare]);
 
   return (
+
     <div className="relative min-h-screen overflow-hidden bg-black text-white">
 
       {/* Background */}
@@ -76,147 +136,159 @@ export default function Compare() {
 
         {/* Empty */}
 
-        {!isLoading && !comparisonData && !error && (
-          <CompareEmptyState />
-        )}
+        {!isLoading &&
+          !comparisonData &&
+          !error && (
+            <CompareEmptyState />
+          )}
 
         {/* Error */}
 
-        {!isLoading && error && (
+        {!isLoading &&
+          error && (
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mt-10 rounded-3xl border border-red-500/20 bg-red-500/10 backdrop-blur-xl p-8 text-center"
-          >
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="
+                mt-10
+                rounded-3xl
+                border
+                border-red-500/20
+                bg-red-500/10
+                backdrop-blur-xl
+                p-8
+                text-center
+              "
+            >
 
-            <h2 className="text-2xl font-bold text-red-300">
-              Comparison Failed
-            </h2>
+              <h2 className="text-2xl font-bold text-red-300">
+                Comparison Failed
+              </h2>
 
-            <p className="mt-4 text-red-200">
-              {error}
-            </p>
+              <p className="mt-4 text-red-200">
+                {error}
+              </p>
 
-          </motion.div>
+            </motion.div>
 
-        )}
-
-        {/* Results */}
+          )}
 
         <AnimatePresence>
 
-          {!isLoading && comparisonData && (
+          {!isLoading &&
+            comparisonData && (
 
-            <div className="space-y-10 mt-14">
+              <div className="space-y-10 mt-14">
+                                {/* Company Cards */}
 
-              {/* Company Cards */}
+                <motion.div
+                  className="grid lg:grid-cols-2 gap-8"
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.45,
+                    delay: 0.1,
+                  }}
+                >
 
-              <motion.div
-                className="grid lg:grid-cols-2 gap-8"
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.45,
-                  delay: 0.1,
-                }}
-              >
+                  <CompanyCard
+                    company={comparisonData.company_1}
+                    accent="purple"
+                  />
 
-                <CompanyCard
-                  company={comparisonData.company_1}
-                  accent="purple"
-                />
+                  <CompanyCard
+                    company={comparisonData.company_2}
+                    accent="blue"
+                  />
 
-                <CompanyCard
-                  company={comparisonData.company_2}
-                  accent="blue"
-                />
+                </motion.div>
 
-              </motion.div>
+                {/* Comparison */}
 
-              {/* Comparison */}
+                <motion.div
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.45,
+                    delay: 0.2,
+                  }}
+                >
 
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.45,
-                  delay: 0.2,
-                }}
-              >
-
-                <ComparisonBar
+                  <ComparisonBar
                     company1={comparisonData.company_1}
                     company2={comparisonData.company_2}
                     comparison={comparisonData.comparison}
-                />
+                  />
 
-              </motion.div>
+                </motion.div>
 
-              {/* Winner */}
+                {/* Winner */}
 
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.45,
-                  delay: 0.3,
-                }}
-              >
+                <motion.div
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.45,
+                    delay: 0.3,
+                  }}
+                >
 
-                <WinnerCard
+                  <WinnerCard
                     winner={comparisonData.comparison.winner}
                     company1={comparisonData.company_1}
                     company2={comparisonData.company_2}
                     comparison={comparisonData.comparison}
-                />
+                  />
 
-              </motion.div>
+                </motion.div>
 
-              {/* Metrics */}
+                {/* Metrics */}
 
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.45,
-                  delay: 0.4,
-                }}
-              >
+                <motion.div
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.45,
+                    delay: 0.4,
+                  }}
+                >
 
-                <MetricsTable
-                  company1={comparisonData.company_1}
-                  company2={comparisonData.company_2}
-                  winner={comparisonData.winner}
-                />
+                  <MetricsTable
+                    company1={comparisonData.company_1}
+                    company2={comparisonData.company_2}
+                    winner={comparisonData.comparison.winner}
+                  />
 
-              </motion.div>
+                </motion.div>
 
-              {/* AI Verdict */}
+                {/* AI Verdict */}
 
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.45,
-                  delay: 0.5,
-                }}
-              >
+                <motion.div
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.45,
+                    delay: 0.5,
+                  }}
+                >
 
-                <AIVerdictCard
-                  comparison={comparisonData.comparison}
-                />
+                  <AIVerdictCard
+                    comparison={comparisonData.comparison}
+                  />
 
-              </motion.div>
+                </motion.div>
 
-            </div>
+              </div>
 
-          )}
+            )}
 
         </AnimatePresence>
 
       </div>
 
     </div>
+
   );
+
 }
