@@ -15,6 +15,10 @@ from app.services.intelligence.activity_score_service import (
 from app.services.compare.compare_intelligence_service import (
     build_company_comparison,
 )
+from app.services.analytics.analytics_service import (
+    track_event,
+)
+
 
 
 # ---------------------------------------------------------
@@ -47,6 +51,12 @@ def compare_companies(
 
     company_1 = company_1.strip().title()
     company_2 = company_2.strip().title()
+    track_event(
+    db=db,
+    event_type="compare",
+    company=company_1,
+    company_2=company_2,
+)
 
     # -----------------------------------------------------
     # Load Articles

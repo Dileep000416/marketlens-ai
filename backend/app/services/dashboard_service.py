@@ -16,6 +16,11 @@ from app.services.recommendation.recommendation_service import (
     generate_recommendations,
 )
 
+from app.services.analytics.analytics_service import (
+    track_event,
+)
+
+
 # ---------------------------------------------------------
 # Default Dashboard Response
 # ---------------------------------------------------------
@@ -249,6 +254,11 @@ def get_dashboard_data(
 ):
 
     company_name = company_name.strip().title()
+    track_event(
+    db=db,
+    event_type="search",
+    company=company_name,
+)
 
     articles = get_company_articles(
 

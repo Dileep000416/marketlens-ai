@@ -3,13 +3,18 @@ from fastapi import FastAPI
 from app.database.base import Base
 from app.database.connection import engine
 
-from app.models import Competitor, NewsArticle
+from app.models import (
+    Competitor,
+    NewsArticle,
+    AnalyticsEvent,
+)
 from app.api.competitor import router as competitor_router
 from app.api.news import router as news_router
 from app.api.insights import router as insights_router
 from app.api.dashboard import router as dashboard_router
 from app.api.compare import router as compare_router
 from fastapi.middleware.cors import CORSMiddleware
+from app.api.analytics import router as analytics_router
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -30,6 +35,7 @@ app.include_router(
 )
 app.include_router(dashboard_router)
 app.include_router(compare_router)
+app.include_router(analytics_router)
 
 
 @app.get("/")

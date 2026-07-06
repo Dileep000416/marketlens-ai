@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Compare from "./pages/Compare";
+import Analytics from "./pages/Analytics";
 
 function App() {
   return (
@@ -23,6 +24,11 @@ function App() {
         <Route
           path="/compare"
           element={<Compare />}
+        />
+
+        <Route
+          path="/analytics"
+          element={<Analytics />}
         />
 
       </Routes>

@@ -20,6 +20,27 @@ export const compareCompanies = async (company1, company2) => {
   return response.data;
 };
 
+/* ---------------- Analytics ---------------- */
+
+export const trackAnalyticsEvent = async ({
+  event_type,
+  company,
+  company_2 = null,
+}) => {
+  await api.post("/analytics/event", {
+    event_type,
+    company,
+    company_2,
+  });
+};
+
+export const getAnalyticsDashboard = async () => {
+  const response = await api.get(
+    "/analytics/dashboard"
+  );
+  return response.data;
+};
+
 /* ---------------- Insights ---------------- */
 
 export const getInsights = async (company) => {
